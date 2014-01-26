@@ -113,6 +113,7 @@
         var YouTubeURL = "//www.youtube.com/embed/" + youtubeId + "?rel=0&showsearch=0&autohide=" + options.autohide;
         YouTubeURL += "&autoplay=" + options.autoplay + "&controls=" + options.controls + "&fs=" + options.fs + "&loop=" + options.loop;
         YouTubeURL += "&showinfo=" + options.showinfo + "&color=" + options.color + "&theme=" + options.theme;
+        YouTubeURL += "&wmode=transparent"; // Firefox Bug Fix
         return YouTubeURL;
     }
 
