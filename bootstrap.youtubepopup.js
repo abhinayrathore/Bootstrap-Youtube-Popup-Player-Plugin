@@ -6,7 +6,6 @@
 (function ($) {
     var $YouTubeModal = null,
         $YouTubeModalDialog = null,
-        $YouTubeModalContent = null,
         $YouTubeModalTitle = null,
         $YouTubeModalBody = null,
         margin = 5;
@@ -26,12 +25,11 @@
 												'<button type="button" class="close" data-dismiss="modal">&times;</button>'+
 												'<h4 class="modal-title" id="YouTubeModalTitle"></h4>'+
 											'</div>'+
-											'<div class="modal-body" id="YouTubeModalBody"></div>'+
+											'<div class="modal-body" id="YouTubeModalBody" style="padding:0;"></div>'+
 										'</div>'+
 									'</div>';
                 $YouTubeModal.html(modalContent).hide().appendTo('body');
                 $YouTubeModalDialog = $("#YouTubeModalDialog");
-                $YouTubeModalContent = $("#YouTubeModalContent");
                 $YouTubeModalTitle = $("#YouTubeModalTitle");
                 $YouTubeModalBody = $("#YouTubeModalBody");
                 $YouTubeModal.modal({
@@ -63,7 +61,7 @@
                             setModalTitle(videoTitle);
                         }
 
-                        resizeModal(options.width, options.height);
+                        resizeModal(options.width);
 
                         //Setup YouTube Modal
                         var YouTubeURL = getYouTubeUrl(youtubeId, options);
@@ -96,14 +94,7 @@
         setModalBody('');
     }
 
-    function resizeModal(w, h) {
-        $YouTubeModalContent.css({
-            width: w + (margin * 2)
-        });
-        $YouTubeModalBody.css({
-            height: h + (margin * 2),
-            padding: 0
-        });
+    function resizeModal(w) {
         $YouTubeModalDialog.css({
             width: w + (margin * 2)
         });
