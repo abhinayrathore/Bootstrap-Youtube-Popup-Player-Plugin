@@ -8,10 +8,11 @@
     $YouTubeModalDialog = null,
     $YouTubeModalTitle = null,
     $YouTubeModalBody = null,
-    margin = 5;
+    margin = 5,
+    methods;
 
   //Plugin methods
-  var methods = {
+  methods = {
     //initialize plugin
     init: function (options) {
       options = $.extend({}, $.fn.YouTubeModal.defaults, options);
@@ -44,7 +45,7 @@
           obj.data('YouTube', {
             target: obj
           });
-          $(obj).bind('click.YouTubeModal', function () {
+          $(obj).bind('click.YouTubeModal', function (event) {
             var youtubeId = options.youtubeId;
             if ($.trim(youtubeId) == '' && obj.is("a")) {
               youtubeId = getYouTubeIdFromUrl(obj.attr("href"));
@@ -69,7 +70,7 @@
             setModalBody(YouTubePlayerIframe);
             $YouTubeModal.modal('show');
 
-            return false;
+            event.preventDefault();
           });
         }
       });
@@ -115,13 +116,17 @@
   }
 
   function setYouTubeTitle(youtubeId) {
-    var url = ["https://gdata.youtube.com/feeds/api/videos/", youtubeId, "?v=2&alt=json"].join('');
     $.ajax({
-      url: url,
-      dataType: 'jsonp',
-      cache: true,
+      url: window.location.protocol + '//query.yahooapis.com/v1/public/yql',
+      data: {
+        q: "select * from json where url ='http://www.youtube.com/oembed?url=http://www.youtube.com/watch?v=" + youtubeId + "&format=json'",
+        format: "json"
+      },
+      dataType: "jsonp",
       success: function (data) {
-        setModalTitle(data.entry.title.$t);
+          if (data && data.query && data.query.results && data.query.results.json) {
+            setModalTitle(data.query.results.json.title);
+          }
       }
     });
   }
