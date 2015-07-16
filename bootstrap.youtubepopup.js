@@ -4,12 +4,32 @@
  * https://github.com/abhinayrathore/Bootstrap-Youtube-Popup-Player-Plugin
  */
 (function ($) {
-  var $YouTubeModal = null,
-    $YouTubeModalDialog = null,
-    $YouTubeModalTitle = null,
-    $YouTubeModalBody = null,
-    margin = 5,
-    methods;
+  var $YouTubeModal,
+    $YouTubeModalDialog,
+    $YouTubeModalTitle,
+    $YouTubeModalBody,
+    margin,
+    methods,
+    modalContentVersion = {
+      2:
+      '<div class="modal-header">\
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>\
+        <h3 id="YouTubeModalTitle"></h3>\
+      </div>\
+      <div class="modal-body" id="YouTubeModalBody" style="max-height:initial;overflow-y:initial;padding:0"></div>',
+
+      3:
+      '<div class="modal-dialog" id="YouTubeModalDialog">\
+        <div class="modal-content">\
+          <div class="modal-header">\
+            <button type="button" class="close" data-dismiss="modal">&times;</button>\
+            <h4 class="modal-title" id="YouTubeModalTitle"></h4>\
+          </div>\
+          <div class="modal-body" id="YouTubeModalBody" style="padding:0"></div>\
+        </div>\
+      </div>'
+    };
+
 
   //Plugin methods
   methods = {
@@ -17,19 +37,17 @@
     init: function (options) {
       options = $.extend({}, $.fn.YouTubeModal.defaults, options);
 
+      var modalWrapperVersion = {
+        2: '<div class="modal hide fade ' + options.cssClass + '" id="YouTubeModalDialog">',
+        3: '<div class="modal fade ' + options.cssClass + '" id="YouTubeModal" role="dialog" aria-hidden="true">'
+      };
+
+      margin = (options.version === 2) ? 20 : 5;
+
       // initialize YouTube Player Modal
-      if ($YouTubeModal == null) {
-        $YouTubeModal = $('<div class="modal fade ' + options.cssClass + '" id="YouTubeModal" role="dialog" aria-hidden="true">');
-        var modalContent = '<div class="modal-dialog" id="YouTubeModalDialog">' +
-                              '<div class="modal-content" id="YouTubeModalContent">' +
-                                '<div class="modal-header">' +
-                                  '<button type="button" class="close" data-dismiss="modal">&times;</button>' +
-                                  '<h4 class="modal-title" id="YouTubeModalTitle"></h4>' +
-                                '</div>' +
-                                '<div class="modal-body" id="YouTubeModalBody" style="padding:0;"></div>' +
-                              '</div>' +
-                            '</div>';
-        $YouTubeModal.html(modalContent).hide().appendTo('body');
+      if (!$YouTubeModal) {
+        $YouTubeModal = $(modalWrapperVersion[+options.version]);
+        $YouTubeModal.html(modalContentVersion[+options.version]).hide().appendTo('body');
         $YouTubeModalDialog = $("#YouTubeModalDialog");
         $YouTubeModalTitle = $("#YouTubeModalTitle");
         $YouTubeModalBody = $("#YouTubeModalBody");
@@ -39,45 +57,48 @@
       }
 
       return this.each(function () {
-        var obj = $(this);
-        var data = obj.data('YouTube');
-        if (!data) { //check if event is already assigned
-          obj.data('YouTube', {
-            target: obj
-          });
-          $(obj).bind('click.YouTubeModal', function (event) {
-            var youtubeId = options.youtubeId;
-            if ($.trim(youtubeId) == '' && obj.is("a")) {
-              youtubeId = getYouTubeIdFromUrl(obj.attr("href"));
-            }
-            if ($.trim(youtubeId) == '' || youtubeId === false) {
-              youtubeId = obj.attr(options.idAttribute);
-            }
-            var videoTitle = $.trim(options.title);
-            if (videoTitle == '') {
-              if (options.useYouTubeTitle) setYouTubeTitle(youtubeId);
-              else videoTitle = obj.attr('title');
-            }
-            if (videoTitle) {
-              setModalTitle(videoTitle);
-            }
+        var $this = $(this);
+        var data = $this.data('YouTube');
 
-            resizeModal(options.width);
+        //check if event is already assigned
+        if (data) return;
 
-            //Setup YouTube Modal
-            var YouTubeURL = getYouTubeUrl(youtubeId, options);
-            var YouTubePlayerIframe = getYouTubePlayer(YouTubeURL, options.width, options.height);
-            setModalBody(YouTubePlayerIframe);
-            $YouTubeModal.modal('show');
+        $this.data('YouTube', {
+          target: $this
+        });
+        $this.bind('click.YouTubeModal', function (event) {
+          var youtubeId = options.youtubeId;
+          if ($.trim(youtubeId) === '' && $this.is('a')) {
+            youtubeId = getYouTubeIdFromUrl($this.attr('href'));
+          }
+          if ($.trim(youtubeId) === '' || youtubeId === false) {
+            youtubeId = $this.attr(options.idAttribute);
+          }
+          var videoTitle = $.trim(options.title);
+          if (videoTitle === '') {
+            if (options.useYouTubeTitle) setYouTubeTitle(youtubeId);
+            else videoTitle = $this.attr('title');
+          }
+          if (videoTitle) {
+            setModalTitle(videoTitle);
+          }
 
-            event.preventDefault();
-          });
-        }
+          resizeModal(options.width);
+
+          //Setup YouTube Modal
+          var YouTubeURL = getYouTubeUrl(youtubeId, options);
+          var YouTubePlayerIframe = getYouTubePlayer(YouTubeURL, options.width, options.height);
+          setModalBody(YouTubePlayerIframe);
+
+          $YouTubeModal.modal('show');
+
+          event.preventDefault();
+        });
       });
     },
     destroy: function () {
       return this.each(function () {
-        $(this).unbind(".YouTubeModal").removeData('YouTube');
+        $(this).unbind('.YouTubeModal').removeData('YouTube');
       });
     }
   };
@@ -96,9 +117,7 @@
   }
 
   function resizeModal(w) {
-    $YouTubeModalDialog.css({
-      width: w + (margin * 2)
-    });
+    $YouTubeModalDialog.css('width', w + (margin * 2) + 'px');
   }
 
   function getYouTubeUrl(youtubeId, options) {
@@ -124,9 +143,9 @@
       },
       dataType: "jsonp",
       success: function (data) {
-          if (data && data.query && data.query.results && data.query.results.json) {
-            setModalTitle(data.query.results.json.title);
-          }
+        if (data && data.query && data.query.results && data.query.results.json) {
+          setModalTitle(data.query.results.json.title);
+        }
       }
     });
   }
@@ -134,7 +153,7 @@
   function getYouTubeIdFromUrl(youtubeUrl) {
     var regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=)([^#\&\?]*).*/;
     var match = youtubeUrl.match(regExp);
-    if (match && match[2].length == 11) {
+    if (match && match[2].length === 11) {
       return match[2];
     } else {
       return false;
@@ -167,6 +186,7 @@
     fs: 1,
     loop: 0,
     showinfo: 0,
-    theme: 'light'
+    theme: 'light',
+    version: 3
   };
 })(jQuery);
