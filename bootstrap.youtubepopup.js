@@ -22,7 +22,7 @@
         $YouTubeModal = $('<div class="modal fade ' + options.cssClass + '" id="YouTubeModal" role="dialog" aria-hidden="true">');
         var modalContent = '<div class="modal-dialog" id="YouTubeModalDialog">' +
                               '<div class="modal-content" id="YouTubeModalContent">' +
-                                '<div class="modal-header">' +
+                                '<div class="modal-header" id="YouTubeModalTitleBar">' +
                                   '<button type="button" class="close" data-dismiss="modal">&times;</button>' +
                                   '<h4 class="modal-title" id="YouTubeModalTitle"></h4>' +
                                 '</div>' +
@@ -30,9 +30,10 @@
                               '</div>' +
                             '</div>';
         $YouTubeModal.html(modalContent).hide().appendTo('body');
-        $YouTubeModalDialog = $("#YouTubeModalDialog");
+        $YouTubeModalDialog = $("#YouTubeModalContent");
         $YouTubeModalTitle = $("#YouTubeModalTitle");
         $YouTubeModalBody = $("#YouTubeModalBody");
+        $YouTubeModalTitleBar = $("#YouTubeModalTitleBar");
         $YouTubeModal.modal({
           show: false
         }).on('hide.bs.modal', resetModalBody);
@@ -61,8 +62,12 @@
             if (videoTitle) {
               setModalTitle(videoTitle);
             }
+            if(options.hideTitleBar) {
+              hideTitileBar();
+            }
 
             resizeModal(options.width);
+            console.log(options.width);
 
             //Setup YouTube Modal
             var YouTubeURL = getYouTubeUrl(youtubeId, options);
@@ -93,6 +98,10 @@
   function resetModalBody() {
     setModalTitle('');
     setModalBody('');
+  }
+
+  function hideTitileBar() {
+    $YouTubeModalTitleBar.hide();
   }
 
   function resizeModal(w) {
@@ -158,6 +167,7 @@
     useYouTubeTitle: true,
     idAttribute: 'rel',
     cssClass: 'YouTubeModal',
+    hideTitleBar:false,
     width: 640,
     height: 480,
     autohide: 2,
